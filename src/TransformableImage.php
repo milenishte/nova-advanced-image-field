@@ -3,7 +3,9 @@
 namespace Ctessier\NovaAdvancedImageField;
 
 use Illuminate\Http\UploadedFile;
-use Intervention\Image\Facades\Image;
+use Intervention\Image\ImageManager;
+use Intervention\Image\Drivers\Imagick\Driver as ImagickDriver;
+use Intervention\Image\Drivers\Gd\Driver as GdDriver;
 
 trait TransformableImage
 {
@@ -206,7 +208,14 @@ trait TransformableImage
             return;
         }
 
-        $this->image = Image::make($uploadedFile->getPathName());
+        if ($this->driver === 'imagick') {
+            $driver = new ImagickDriver();
+        } else {
+            $driver = new GdDriver();
+        }
+        $manager = new ImageManager($driver);
+
+        $this->image = $manager->read($uploadedFile->getPathName());
 
         if ($this->autoOrientate) {
             $this->orientateImage();
@@ -225,7 +234,6 @@ trait TransformableImage
         }
 
         $this->image->save($uploadedFile->getPathName(), $this->quality, $this->outputFormat ?? $uploadedFile->getClientOriginalExtension());
-        $this->image->destroy();
     }
 
     /**
