@@ -6,6 +6,8 @@ use Illuminate\Http\UploadedFile;
 use Intervention\Image\ImageManager;
 use Intervention\Image\Drivers\Imagick\Driver as ImagickDriver;
 use Intervention\Image\Drivers\Gd\Driver as GdDriver;
+use Intervention\Image\Encoders\MediaTypeEncoder;
+use Intervention\Image\MediaType;
 
 trait TransformableImage
 {
@@ -185,7 +187,7 @@ trait TransformableImage
         /**
          * @See https://image.intervention.io/v2/api/encode
          */
-        if (!in_array($format, ['jpg', 'png', 'gif', 'tif', 'bmp', 'ico', 'psd', 'webp', 'data-url'])) {
+        if (!in_array($format, ['image/jpg', 'image/png', 'image/gif', 'image/tif', 'image/bmp', 'image/webp', 'data-url'])) {
             throw new \Exception("Unsupported output format: $format");
         }
 
@@ -278,6 +280,11 @@ trait TransformableImage
      */
     private function convertImage(string $format)
     {
-        $this->image->encode($format, $this->quality);
+        $options = [];
+        if(!empty($this->quality)) {
+            $options['quality'] = $this->quality;
+        }
+        $encoderFormat = MediaType::from($format)->format()->encoder($options);
+        $this->image = $this->image->encode($encoderFormat);
     }
 }
