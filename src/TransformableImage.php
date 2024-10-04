@@ -257,10 +257,7 @@ trait TransformableImage
      */
     private function resizeImage()
     {
-        $this->image->resize($this->width, $this->height, function ($constraint) {
-            $constraint->upsize();
-            $constraint->aspectRatio();
-        });
+        $this->image->scaleDown($this->width, $this->height);
     }
 
     /**
